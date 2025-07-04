@@ -1,0 +1,16 @@
+django
+djangorestframework
+djangorestframework-simplejwt
+psycopg2-binary
+django-filter
+channels
+redis
+celery
+django-cors-headers
+daphne
+pytest
+pytest-django
+pytest-asyncio
+channels_redis
+isort
+black
