@@ -19,8 +19,12 @@ const logSlice = createSlice({
       state.logs = [];
       localStorage.removeItem("logs");
     },
+    fetchLogs: (state) => {
+      const storedLogs = JSON.parse(localStorage.getItem("logs")) || [];
+      state.logs = storedLogs;
+    },
   },
 });
 
-export const { addLog, clearLogs } = logSlice.actions;
+export const { addLog, clearLogs, fetchLogs } = logSlice.actions;
 export default logSlice.reducer;

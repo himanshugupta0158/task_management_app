@@ -9,8 +9,9 @@ import { Link } from 'react-router-dom';
 function HomePage() {
     const dispatch = useDispatch();
     const user = useSelector((state) => state.auth.user);
-    const tasks = useSelector((state) => state.tasks.tasks);
-    const users = useSelector((state) => state.auth.users);
+    const tasksRaw = useSelector((state) => state.tasks.tasks);
+    const tasks = Array.isArray(tasksRaw) ? tasksRaw : []; // ✅ ensure it's always an array
+    const users = useSelector((state) => state.auth.users) || [];
     const notifications = useSelector((state) => state.notifications.notifications);
     const { logs, status, error } = useSelector((state) => state.logs);
 
@@ -49,6 +50,7 @@ function HomePage() {
                     <p className="text-2xl">{pendingTasks.length}</p>
                 </div>
             </div>
+
             {(user?.role === 'super_admin' || user?.role === 'admin') && (
                 <div className="mb-6 bg-white p-6 rounded-lg shadow">
                     <h2 className="text-xl font-semibold mb-4">User Management</h2>
@@ -63,6 +65,7 @@ function HomePage() {
                     </ul>
                 </div>
             )}
+
             <div className="mb-6 bg-white p-6 rounded-lg shadow">
                 <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
                 {status === 'loading' && <p className="text-center">Loading logs...</p>}
@@ -75,6 +78,7 @@ function HomePage() {
                     ))}
                 </ul>
             </div>
+
             <Link to="/tasks" className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">
                 Go to Tasks
             </Link>

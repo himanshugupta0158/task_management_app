@@ -1,8 +1,17 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "../../services/axios";
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("access");
+  return {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+};
+
 export const fetchNotifications = createAsyncThunk("notifications/fetchNotifications", async () => {
-  const res = await axios.get("/notifications/");
+  const res = await axios.get("/notifications/", getAuthHeaders());
   return res.data;
 });
 

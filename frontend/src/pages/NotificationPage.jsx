@@ -18,11 +18,15 @@ function NotificationPage() {
             {status === 'loading' && <p className="text-center">Loading...</p>}
             {error && <p className="text-center text-red-500">{error}</p>}
             <ul className="space-y-4">
-                {notifications.map((notification) => (
-                    <li key={notification.id} className="border p-4 bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
-                        {notification.message} - {notification.created_at}
-                    </li>
-                ))}
+                {Array.isArray(notifications) && notifications.length > 0 ? (
+                    notifications.map((notification) => (
+                        <li key={notification.id} className="border p-4 bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
+                            {notification.message} - {notification.created_at}
+                        </li>
+                    ))) : (
+                    <li className="text-center text-gray-500">No notifications available</li>
+                )
+                }
             </ul>
         </div>
     );

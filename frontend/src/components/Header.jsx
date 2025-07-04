@@ -8,7 +8,9 @@ function Header() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const user = useSelector((state) => state.auth.user);
-    const notifications = useSelector((state) => state.notifications.notifications || []);
+    const notificationsRaw = useSelector((state) => state.notifications.notifications);
+    const notifications = Array.isArray(notificationsRaw) ? notificationsRaw : [];
+
     const [showProfileModal, setShowProfileModal] = useState(false);
 
     const handleLogout = () => {
@@ -17,7 +19,6 @@ function Header() {
         setShowProfileModal(false);
     };
 
-    // Generate initials from username or email
     const getInitials = () => {
         if (!user) return '';
         if (user.username) return user.username.charAt(0).toUpperCase();
@@ -28,7 +29,6 @@ function Header() {
         return '';
     };
 
-    // Calculate unread notification count
     const unreadCount = notifications.filter((n) => !n.isRead).length;
 
     return (

@@ -148,39 +148,47 @@ function TaskListPage() {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {tasks.map((task) => (
-                                <tr key={task.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap">{task.title}</td>
-                                    <td className="px-6 py-4">{task.description}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{task.due_date}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{task.priority}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{task.status}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {users.find((u) => u.id === task.assigned_to)?.username || 'N/A'}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {users.find((u) => u.id === task.created_by)?.username || 'N/A'}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {(user?.role !== 'regular' || task.created_by === user.id) && (
-                                            <div className="flex space-x-2">
-                                                <button
-                                                    onClick={() => handleEditTask(task)}
-                                                    className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteTask(task.id)}
-                                                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                                                >
-                                                    Delete
-                                                </button>
-                                            </div>
-                                        )}
+                            {Array.isArray(tasks) && tasks.length > 0 ? (
+                                tasks.map((task) => (
+                                    <tr key={task.id}>
+                                        <td className="px-6 py-4 whitespace-nowrap">{task.title}</td>
+                                        <td className="px-6 py-4">{task.description}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">{task.due_date}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">{task.priority}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">{task.status}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {users.find((u) => u.id === task.assigned_to)?.username || 'N/A'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {users.find((u) => u.id === task.created_by)?.username || 'N/A'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {(user?.role !== 'regular' || task.created_by === user.id) && (
+                                                <div className="flex space-x-2">
+                                                    <button
+                                                        onClick={() => handleEditTask(task)}
+                                                        className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteTask(task.id)}
+                                                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="8" className="text-center py-4 text-gray-500">
+                                        {status === "loading" ? "Loading tasks..." : "No tasks found"}
                                     </td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 </div>

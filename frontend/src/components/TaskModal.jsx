@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 function TaskModal({ isOpen, onClose, task }) {
     const dispatch = useDispatch();
     const user = useSelector((state) => state.auth.user);
-    const users = useSelector((state) => state.auth.users);
+    const users = useSelector((state) => state.auth.users) || [];
     const [form, setForm] = useState({
         title: task?.title || '',
         description: task?.description || '',
@@ -105,11 +105,19 @@ function TaskModal({ isOpen, onClose, task }) {
 
     if (!isOpen) return null;
 
-    const assignableUsers = users.filter((u) => {
-        if (user?.role === 'super_admin') return true;
-        if (user?.role === 'admin') return u.role === 'regular' || u.id === user.id || user.connected_users.includes(u.id);
-        return false;
-    });
+    const assignableUsers = Array.isArray(users)
+        ? users.filter((u) => {
+            if (user?.role === "super_admin") return true;
+            if (user?.role === "admin")
+                return (
+                    u.role === "regular" ||
+                    u.id === user.id ||
+                    user.connected_users.includes(u.id)
+                );
+            return false;
+        })
+        : [];
+
 
     return (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-30 flex items-center justify-center z-50">
