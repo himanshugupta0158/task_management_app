@@ -32,9 +32,7 @@ ALLOWED_HOSTS = ["*"]
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
-
-
-# Application definition
+CORS_ALLOW_ALL_ORIGINS = True
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -136,6 +134,17 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": os.environ.get("REDIS_URL", "redis://localhost:6379/1"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
@@ -162,7 +171,9 @@ AUTH_USER_MODEL = "users.User"
 
 ASGI_APPLICATION = "core.asgi.application"
 
-CELERY_BROKER_URL = os.environ.get("REDIS_URL", "redis://redis:6379")
+CELERY_BROKER_URL = os.environ.get(
+    "REDIS_URL", "redis://localhost:6379/0"
+)
 
 CHANNEL_LAYERS = {
     "default": {
@@ -172,7 +183,3 @@ CHANNEL_LAYERS = {
         },
     },
 }
-
-
-# CORS
-CORS_ALLOW_ALL_ORIGINS = True

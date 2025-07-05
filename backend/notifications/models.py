@@ -10,7 +10,11 @@ class Notification(models.Model):
     )
     message = models.TextField()
     task = models.ForeignKey(
-        Task, related_name="notifications", on_delete=models.CASCADE
+        Task,
+        related_name="notifications",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

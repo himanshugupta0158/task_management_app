@@ -1,16 +1,16 @@
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 function LandingPage() {
     return (
         <div className="bg-gray-100 min-h-screen">
-            {/* Hero Section */}
             <section className="bg-blue-600 text-white py-20 text-center">
                 <div className="max-w-4xl mx-auto px-4">
                     <h1 className="text-4xl md:text-5xl font-bold mb-4 animate-fade-in">
                         Streamline Your Workflow with Task Manager
                     </h1>
                     <p className="text-lg md:text-xl mb-8 animate-fade-in animation-delay-200">
-                        Organize tasks, collaborate in real-time, and boost productivity with our intuitive task management app.
+                        Organize tasks, collaborate in real-time, and boost productivity with our intuitive task
+                        management app.
                     </p>
                     <div className="flex justify-center gap-4">
                         <Link
@@ -29,7 +29,6 @@ function LandingPage() {
                 </div>
             </section>
 
-            {/* Features Section */}
             <section className="py-16 bg-white">
                 <div className="max-w-6xl mx-auto px-4">
                     <h2 className="text-3xl font-bold text-center mb-12">Why Choose Task Manager?</h2>
@@ -56,7 +55,6 @@ function LandingPage() {
                 </div>
             </section>
 
-            {/* CTA Section */}
             <section className="py-16 bg-blue-50 text-center">
                 <div className="max-w-4xl mx-auto px-4">
                     <h2 className="text-3xl font-bold mb-4">Ready to Get Organized?</h2>

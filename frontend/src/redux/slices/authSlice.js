@@ -1,17 +1,20 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "../../services/axios";
 
-// Initial State
+const saved = JSON.parse(localStorage.getItem("auth") || "{}");
 const initialState = {
-  user: JSON.parse(localStorage.getItem("user")) || null,
-  token: localStorage.getItem("access") || null,
-  refreshToken: localStorage.getItem("refresh") || null,
+  user: saved.user ?? null,
+  token: saved.access ?? null,
+  refreshToken: saved.refresh ?? null,
   users: [],
   status: "idle",
   error: null,
 };
 
-// Async Thunks
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("access");
+  return { headers: { Authorization: `Bearer ${token}` } };
+};
 
 export const login = createAsyncThunk(
   "auth/login",
@@ -19,21 +22,15 @@ export const login = createAsyncThunk(
     try {
       const response = await axios.post("/users/auth/login/", credentials);
       const { access, refresh } = response.data;
+      localStorage.setItem("access", access);
+      localStorage.setItem("refresh", refresh);
       const profile = await axios.get("/users/me/", {
         headers: { Authorization: `Bearer ${access}` },
       });
-
-      localStorage.setItem("access", access);
-      localStorage.setItem("refresh", refresh);
       localStorage.setItem("user", JSON.stringify(profile.data));
-
-      return {
-        user: profile.data,
-        token: access,
-        refreshToken: refresh,
-      };
+      return { user: profile.data, access, refresh };
     } catch (error) {
-      return rejectWithValue(error.response?.data?.detail || "Login failed");
+      return rejectWithValue(error.response?.data || "Login failed");
     }
   }
 );
@@ -57,7 +54,7 @@ export const logout = createAsyncThunk(
     try {
       await axios.post("/users/auth/logout/", { refresh });
     } catch (err) {
-      // Ignore failure, clear storage anyway
+      console.error("Logout failed:", err);
     }
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
@@ -68,15 +65,11 @@ export const logout = createAsyncThunk(
 
 export const updateUserProfile = createAsyncThunk(
   "auth/updateUserProfile",
-  async (updatedData, { rejectWithValue, getState }) => {
+  async (data, { rejectWithValue }) => {
     try {
-      const { token } = getState().auth;
-      const res = await axios.patch("/users/me/", updatedData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      localStorage.setItem("user", JSON.stringify(res.data));
-      return res.data;
+      const response = await axios.patch("/users/me/", data, getAuthHeaders());
+      localStorage.setItem("user", JSON.stringify(response.data));
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Update failed");
     }
@@ -85,44 +78,39 @@ export const updateUserProfile = createAsyncThunk(
 
 export const fetchUsers = createAsyncThunk(
   "auth/fetchUsers",
-  async (_, { getState, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const { token } = getState().auth;
-      const res = await axios.get("/users/", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return res.data;
+      const response = await axios.get("/users/", getAuthHeaders());
+      return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Fetching users failed");
+      return rejectWithValue(error.response?.data || "Failed to fetch users");
     }
   }
 );
 
-// Slice
 const authSlice = createSlice({
   name: "auth",
   initialState,
-  reducers: {},
+  reducers: {
+    clearAuthError: (state) => {
+      state.error = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
-
-      // Login
       .addCase(login.pending, (state) => {
         state.status = "loading";
       })
       .addCase(login.fulfilled, (state, action) => {
-        state.status = "succeeded";
         state.user = action.payload.user;
-        state.token = action.payload.token;
-        state.refreshToken = action.payload.refreshToken;
-        state.error = null;
+        state.token = action.payload.access;
+        state.refreshToken = action.payload.refresh;
+        state.status = "succeeded";
       })
       .addCase(login.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       })
-
-      // Register
       .addCase(register.pending, (state) => {
         state.status = "loading";
       })
@@ -134,43 +122,39 @@ const authSlice = createSlice({
         state.status = "failed";
         state.error = action.payload;
       })
-
-      // Logout
       .addCase(logout.fulfilled, (state) => {
         state.user = null;
         state.token = null;
         state.refreshToken = null;
         state.status = "idle";
       })
-
-      // Update Profile
-      .addCase(updateUserProfile.pending, (state) => {
-        state.status = "loading";
-      })
       .addCase(updateUserProfile.fulfilled, (state, action) => {
-        state.status = "succeeded";
         state.user = action.payload;
-        state.error = null;
+        state.status = "succeeded";
       })
-      .addCase(updateUserProfile.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload;
-      })
-
-      // Fetch Users
       .addCase(fetchUsers.pending, (state) => {
         state.status = "loading";
+        state.error = null;
       })
       .addCase(fetchUsers.fulfilled, (state, action) => {
+        const data = action.payload;
+        if (Array.isArray(data.results)) {
+          state.users = data.results;
+        } else {
+          console.error("Unexpected users data format:", data);
+          state.users = [];
+        }
         state.status = "succeeded";
-        state.users = action.payload;
         state.error = null;
       })
       .addCase(fetchUsers.rejected, (state, action) => {
+        console.error("Failed to fetch users:", action.payload);
+        state.users = [];
         state.status = "failed";
-        state.error = action.payload;
+        state.error = action.payload || "Failed to load users";
       });
   },
 });
 
+export const { clearAuthError } = authSlice.actions;
 export default authSlice.reducer;

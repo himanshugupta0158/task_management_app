@@ -35,14 +35,21 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
+    is_staff = serializers.BooleanField(default=False)
 
     class Meta:
         model = User
-        fields = ["username", "email", "password"]
+        fields = ["username", "email", "password", "is_staff"]
+
+    def validate_password(self, value):
+        validate_password(value)
+        return value
 
     def create(self, validated_data):
         password = validated_data.pop("password")
+        is_staff = validated_data.pop("is_staff", False)
         user = User.objects.create_user(**validated_data)
         user.set_password(password)
+        user.is_staff = is_staff
         user.save()
         return user

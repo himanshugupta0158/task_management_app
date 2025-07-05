@@ -1,64 +1,78 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "../../services/axios";
-import { toast } from "react-toastify";
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("access");
   return {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { Authorization: `Bearer ${token}` },
   };
 };
 
-// Fetch all tasks
-export const fetchTasks = createAsyncThunk("tasks/fetchTasks", async (_, { rejectWithValue }) => {
-  try {
-    const response = await axios.get("/tasks/", getAuthHeaders());
-    return response.data;
-  } catch (err) {
-    return rejectWithValue(err.response?.data || "Failed to fetch tasks");
-  }
-});
-
-// Create new task
-export const createTask = createAsyncThunk(
-  "tasks/createTask",
-  async (taskData, { rejectWithValue }) => {
+export const fetchTasks = createAsyncThunk(
+  "tasks/fetchTasks",
+  async (filters = {}, { rejectWithValue }) => {
     try {
-      const response = await axios.post("/tasks/", taskData, getAuthHeaders());
-      toast.success("Task created successfully");
+      const params = new URLSearchParams(
+        Object.entries(filters).filter(([_, v]) => v)
+      ).toString();
+      const response = await axios.get(`/tasks/?${params}`, getAuthHeaders());
       return response.data;
-    } catch (err) {
-      return rejectWithValue(err.response?.data || "Failed to create task");
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Failed to fetch tasks");
     }
   }
 );
 
-// Update task
+export const createTask = createAsyncThunk(
+  "tasks/createTask",
+  async (data, { rejectWithValue }) => {
+    try {
+      const response = await axios.post("/tasks/", data, getAuthHeaders());
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Failed to create task");
+    }
+  }
+);
+
 export const updateTask = createAsyncThunk(
   "tasks/updateTask",
   async ({ taskId, updates }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`/tasks/${taskId}/`, updates, getAuthHeaders());
-      toast.success("Task updated successfully");
+      const response = await axios.patch(
+        `/tasks/${taskId}/`,
+        updates,
+        getAuthHeaders()
+      );
       return response.data;
-    } catch (err) {
-      return rejectWithValue(err.response?.data || "Failed to update task");
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Failed to update task");
     }
   }
 );
 
-// Delete task
 export const deleteTask = createAsyncThunk(
   "tasks/deleteTask",
   async (taskId, { rejectWithValue }) => {
     try {
       await axios.delete(`/tasks/${taskId}/`, getAuthHeaders());
-      toast.success("Task deleted successfully");
       return taskId;
-    } catch (err) {
-      return rejectWithValue(err.response?.data || "Failed to delete task");
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Failed to delete task");
+    }
+  }
+);
+
+export const fetchTaskStats = createAsyncThunk(
+  "tasks/fetchTaskStats",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get("/tasks/stats/", getAuthHeaders());
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || "Failed to fetch task stats"
+      );
     }
   }
 );
@@ -69,6 +83,12 @@ const taskSlice = createSlice({
     tasks: [],
     status: "idle",
     error: null,
+    stats: {
+      created: 0,
+      assigned: 0,
+      completed: 0,
+      pending: 0,
+    },
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -77,8 +97,10 @@ const taskSlice = createSlice({
         state.status = "loading";
       })
       .addCase(fetchTasks.fulfilled, (state, action) => {
+        state.tasks = Array.isArray(action.payload?.results)
+          ? action.payload.results
+          : [];
         state.status = "succeeded";
-        state.tasks = action.payload;
       })
       .addCase(fetchTasks.rejected, (state, action) => {
         state.status = "failed";
@@ -93,6 +115,9 @@ const taskSlice = createSlice({
       })
       .addCase(deleteTask.fulfilled, (state, action) => {
         state.tasks = state.tasks.filter((t) => t.id !== action.payload);
+      })
+      .addCase(fetchTaskStats.fulfilled, (state, action) => {
+        state.stats = action.payload;
       });
   },
 });

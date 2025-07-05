@@ -5,6 +5,7 @@ psycopg2-binary
 django-filter
 channels
 redis
+django-redis
 celery
 django-cors-headers
 daphne

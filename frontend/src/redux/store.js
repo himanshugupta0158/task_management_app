@@ -2,15 +2,16 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./slices/authSlice";
 import taskReducer from "./slices/taskSlice";
 import notificationReducer from "./slices/notificationSlice";
-import logReducer from "./slices/logSlice";
+import { authMiddleware } from "./middleware/authMiddleware";
 
-export const store = configureStore({
+const store = configureStore({
   reducer: {
     auth: authReducer,
     tasks: taskReducer,
     notifications: notificationReducer,
-    logs: logReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(authMiddleware),
 });
 
 export default store;

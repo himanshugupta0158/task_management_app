@@ -1,7 +1,7 @@
-import { NavLink } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../redux/slices/authSlice';
-import { useNavigate } from 'react-router-dom';
+import { NavLink } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../redux/slices/authSlice";
+import { useNavigate } from "react-router-dom";
 
 function Sidebar() {
     const user = useSelector((state) => state.auth.user);
@@ -10,7 +10,7 @@ function Sidebar() {
 
     const handleLogout = () => {
         dispatch(logout());
-        navigate('/');
+        navigate("/");
     };
 
     if (!user) return null;
@@ -21,7 +21,7 @@ function Sidebar() {
                 <NavLink
                     to="/home"
                     className={({ isActive }) =>
-                        `block px-4 py-2 rounded hover:bg-gray-700 ${isActive ? 'bg-gray-600' : ''}`
+                        `block px-4 py-2 rounded hover:bg-gray-700 ${isActive ? "bg-gray-600" : ""}`
                     }
                 >
                     Home
@@ -29,7 +29,7 @@ function Sidebar() {
                 <NavLink
                     to="/tasks"
                     className={({ isActive }) =>
-                        `block px-4 py-2 rounded hover:bg-gray-700 ${isActive ? 'bg-gray-600' : ''}`
+                        `block px-4 py-2 rounded hover:bg-gray-700 ${isActive ? "bg-gray-600" : ""}`
                     }
                 >
                     Tasks
@@ -37,7 +37,7 @@ function Sidebar() {
                 <NavLink
                     to="/notifications"
                     className={({ isActive }) =>
-                        `block px-4 py-2 rounded hover:bg-gray-700 ${isActive ? 'bg-gray-600' : ''}`
+                        `block px-4 py-2 rounded hover:bg-gray-700 ${isActive ? "bg-gray-600" : ""}`
                     }
                 >
                     Notifications

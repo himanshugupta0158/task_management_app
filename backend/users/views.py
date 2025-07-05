@@ -5,7 +5,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .permissions import IsAdminOrSuperuser
 from .serializers import RegisterSerializer, UserSerializer, UserUpdateSerializer
 
 User = get_user_model()
@@ -14,7 +13,15 @@ User = get_user_model()
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAdminOrSuperuser]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        if not self.request.user.is_superuser:
+            if not self.request.user.is_staff:
+                return queryset.filter(id=self.request.user.id)
+            return queryset.filter(is_superuser=False)
+        return queryset
 
 
 class UserUpdateView(generics.RetrieveUpdateAPIView):
@@ -36,9 +43,14 @@ class LogoutView(APIView):
 
     def post(self, request):
         try:
-            refresh_token = request.data["refresh"]
+            refresh_token = request.data.get("refresh")
+            if not refresh_token:
+                return Response(
+                    {"detail": "Refresh token is required"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             token = RefreshToken(refresh_token)
             token.blacklist()
             return Response(status=status.HTTP_205_RESET_CONTENT)
-        except Exception:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)

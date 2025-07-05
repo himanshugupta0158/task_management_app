@@ -1,40 +1,81 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "../../services/axios";
 
-const getAuthHeaders = () => {
-  const token = localStorage.getItem("access");
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  };
-};
+export const fetchNotifications = createAsyncThunk(
+  "notifications/fetchNotifications",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await axios.get("/notifications/");
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || "Failed to fetch notifications"
+      );
+    }
+  }
+);
 
-export const fetchNotifications = createAsyncThunk("notifications/fetchNotifications", async () => {
-  const res = await axios.get("/notifications/", getAuthHeaders());
-  return res.data;
-});
+export const markNotificationAsRead = createAsyncThunk(
+  "notifications/markAsRead",
+  async (notificationId, { rejectWithValue }) => {
+    try {
+      const response = await axios.patch(
+        `/notifications/${notificationId}/read/`
+      );
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || "Failed to mark notification as read"
+      );
+    }
+  }
+);
 
 const notificationSlice = createSlice({
   name: "notifications",
-  initialState: { notifications: [], status: "idle", error: null },
-  reducers: {
-    addNotification: (state, action) => {
-      state.notifications.push({ ...action.payload, isRead: false });
-    },
-    markAsRead: (state, action) => {
-      const notif = state.notifications.find((n) => n.id === action.payload);
-      if (notif) notif.isRead = true;
-    },
+  initialState: {
+    notifications: [],
+    status: "idle",
+    error: null,
   },
+  reducers: {},
   extraReducers: (builder) => {
     builder
+      .addCase(fetchNotifications.pending, (state) => {
+        state.status = "loading";
+      })
       .addCase(fetchNotifications.fulfilled, (state, action) => {
-        state.notifications = action.payload;
+        const raw = action.payload;
+
+        // Normalize structure in slice itself
+        if (Array.isArray(raw?.results)) {
+          state.notifications = raw.results.map((n) => ({
+            ...n,
+            created_at: new Date(n.created_at).toISOString(), // Ensure consistent format
+          }));
+        } else if (Array.isArray(raw)) {
+          state.notifications = raw.map((n) => ({
+            ...n,
+            created_at: new Date(n.created_at).toISOString(),
+          }));
+        } else {
+          state.notifications = [];
+        }
         state.status = "succeeded";
+      })
+      .addCase(fetchNotifications.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      })
+      .addCase(markNotificationAsRead.fulfilled, (state, action) => {
+        const index = state.notifications.findIndex(
+          (n) => n.id === action.payload.id
+        );
+        if (index !== -1) {
+          state.notifications[index] = action.payload;
+        }
       });
   },
 });
 
-export const { addNotification, markAsRead } = notificationSlice.actions;
 export default notificationSlice.reducer;

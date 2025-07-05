@@ -1,19 +1,40 @@
-// frontend/src/services/axios.js
 import axios from "axios";
 
-const axiosInstance = axios.create({
-  baseURL: "http://localhost:8000/api", // or your Docker exposed backend URL
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+const api = axios.create({ baseURL: "http://localhost:8000/api/" });
 
-axiosInstance.interceptors.request.use((config) => {
-  const user = JSON.parse(localStorage.getItem("user"));
-  if (user?.token) {
-    config.headers.Authorization = `Bearer ${user.token}`;
+const skipAuthPaths = [
+  "/users/auth/login/",
+  "/users/auth/register/",
+  "/users/auth/logout/",
+  "/users/auth/refresh/",
+];
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("access");
+  const needsAuth = !skipAuthPaths.some((path) => config.url.endsWith(path));
+
+  if (token && needsAuth) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
+
   return config;
 });
 
-export default axiosInstance;
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error?.response?.status;
+
+    if (status === 401) {
+      console.warn("Access token invalid or expired. Redirecting to login.");
+      localStorage.removeItem("access");
+      localStorage.removeItem("refresh");
+      localStorage.removeItem("user");
+      window.location.replace("/login");
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+export default api;
