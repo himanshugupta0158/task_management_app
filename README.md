@@ -10,7 +10,13 @@ A modern, real-time fullstack web application built with:
 
 ---
 
-## ⚙️ Tech Stack
+### NOTE :
+> - Make sure you have **Docker** installed on your system
+> - If you are using windows make sure to run **make** command in power shell
+> - In case make command do not work, please use docker command like **docker compose up --build** - for starting project and **docker compose down** - for stopping.
+> - In case `docker compose` does not work, please use `docker-compose`
+
+## Tech Stack
 
 | Layer       | Technology                                   |
 |-------------|----------------------------------------------|
@@ -51,7 +57,7 @@ cd app_management_app
 make up
 ```
 
-📌 App will be accessible at:
+App will be accessible at:
 
 - Frontend: [http://localhost:5173](http://localhost:5173)
 - Backend: [http://localhost:8000](http://localhost:8000)
