@@ -16,7 +16,7 @@ function Header() {
   const dropdownRef = useRef(null);
 
   useEffect(() => {
-    if (user) {
+    if (user && localStorage.getItem("access")) {
       dispatch(fetchNotifications());
     }
   }, [dispatch, user]);

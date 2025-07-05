@@ -12,11 +12,9 @@ const skipAuthPaths = [
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("access");
   const needsAuth = !skipAuthPaths.some((path) => config.url.endsWith(path));
-
   if (token && needsAuth) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-
   return config;
 });
 
@@ -24,12 +22,14 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error?.response?.status;
+    const originalRequest = error?.config;
 
-    if (status === 401) {
-      console.warn("Access token invalid or expired. Redirecting to login.");
-      localStorage.removeItem("access");
-      localStorage.removeItem("refresh");
-      localStorage.removeItem("user");
+    // Only clear if we actually had a token to begin with
+    const hadToken = localStorage.getItem("access");
+
+    if ((status === 401 || status === 403) && hadToken) {
+      console.warn("Access token expired. Logging out.");
+      localStorage.clear();
       window.location.replace("/login");
     }
 

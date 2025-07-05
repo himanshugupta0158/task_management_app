@@ -15,6 +15,6 @@ python manage.py migrate
 echo "Creating superuser..."
 python create_admin.py
 
-# Start dev server with reload
-echo "Starting Django server..."
-python manage.py runserver 0.0.0.0:8000
+# Start ASGI server (with Channels support)
+echo "Starting Daphne server..."
+daphne -b 0.0.0.0 -p 8000 core.asgi:application

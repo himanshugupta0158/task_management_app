@@ -12,8 +12,11 @@ import TaskListPage from "./pages/TaskListPage";
 import TaskDetailPage from "./pages/TaskDetailPage";
 import NotificationPage from "./pages/NotificationPage";
 import ProfileModal from "./components/ProfileModal";
+import useAppWebSocket from "./hooks/useWebSocket";
+
 
 function AppContent() {
+  useAppWebSocket();
   const navigate = useNavigate();
   const location = useLocation();
   const user = useSelector((state) => state.auth.user);
