@@ -8,7 +8,8 @@ redis
 django-redis
 celery
 django-cors-headers
-daphne
+uvicorn[standard]
+websockets
 pytest
 pytest-django
 pytest-asyncio
