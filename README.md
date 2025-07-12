@@ -47,7 +47,7 @@ A modern, real-time fullstack web application built with:
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/himanshugupta0158/app_management_app.git
+git clone [https://github.com/himanshugupta0158/app_management_app.git](https://github.com/himanshugupta0158/task_management_app.git)
 cd app_management_app
 ```
 
